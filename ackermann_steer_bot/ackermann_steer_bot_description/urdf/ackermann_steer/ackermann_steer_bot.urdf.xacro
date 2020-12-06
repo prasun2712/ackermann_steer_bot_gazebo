@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<robot name="ackermann_steer_bot" xmlns:xacro="http://ros.org/wiki/xacro">
+    <!-- Include all component files -->
+    <xacro:include filename="$(find ackermann_steer_bot_description)/urdf/common_properties/materials.urdf.xacro" />
+    <xacro:include filename="$(find ackermann_steer_bot_description)/urdf/ackermann_steer/ackermann_steer_base.urdf.xacro" />
+    <xacro:include filename="$(find ackermann_steer_bot_description)/urdf/ackermann_steer/ackermann_steer_wheel.urdf.xacro" />
+    <xacro:include filename="$(find ackermann_steer_bot_description)/urdf/gazebo/ackermann_steer_base_gazebo.urdf.xacro" />
+</robot>

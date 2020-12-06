@@ -1,0 +1,138 @@
+<?xml version="1.0"?>
+
+<robot name="steer_wheel" xmlns:xacro="http://ros.org/wiki/xacro">
+
+    <xacro:property name="fixed_size_x" value="0.2" />
+    <xacro:property name="fixed_size_y" value="0.12" />
+    <xacro:property name="fixed_size_z" value="0.02" />
+    <xacro:property name="steer_link_radius" value="${fixed_size_y/2}" />
+    <xacro:property name="steer_link_length" value="${base_size_z - fixed_size_z}" />
+    <xacro:property name="wheel_color" value="WoodPallet" />
+    <xacro:property name="castor_wheel_color" value="Grass" />
+    <xacro:property name="body_color" value="WoodFloor" />
+
+    <xacro:include filename="$(find ackermann_steer_bot_description)/urdf/common_properties/common_properties.urdf.xacro" />
+    <!-- Fixed joint to hold steer and traction component.     -->
+    <gazebo reference="steer_fixed_link">
+        <material>Gazebo/${body_color}</material>
+    </gazebo>
+    <link name="steer_fixed_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${fixed_size_x} ${fixed_size_y} ${fixed_size_z}" />
+            </geometry>
+            <material name="OffWhite" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <box size="${fixed_size_x} ${fixed_size_y} ${fixed_size_z}" />
+            </geometry>
+        </collision>
+        <xacro:box_inertial x="${fixed_size_x}" y="${fixed_size_y}" z="${fixed_size_z}" mass="0.5">
+            <origin xyz="0 0 0" />
+        </xacro:box_inertial>
+    </link>
+
+    <joint name="steer_fixed_joint" type="fixed">
+        <origin xyz="${base_size_x/2 + fixed_size_x/2} 0 ${base_size_z/2 - fixed_size_z/2}" rpy="0 0 0" />
+        <parent link="base_link"/>
+        <child link="steer_fixed_link" />
+    </joint>
+
+    <!-- Steer joint. -->
+    <gazebo reference="steer_control_link">
+        <material>Gazebo/Blue</material>
+    </gazebo>
+    <link name="steer_control_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${steer_link_radius}" length="${steer_link_length}"/>
+            </geometry>
+            <material name="${ppp}" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${steer_link_radius}" length="${steer_link_length}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertial radius="${steer_link_radius}" length="${steer_link_length}" mass="5">
+            <origin xyz="0 0 0" />
+        </xacro:cylinder_inertial>
+    </link>
+
+    <joint name="steer_contol_joint" type="revolute">
+        <origin xyz="${fixed_size_x/2 - steer_link_radius} 0 -${steer_link_length/2 + fixed_size_z/2}" rpy="0 0 0" />
+        <parent link="steer_fixed_link"/>
+        <child link="steer_control_link" />
+        <limit lower="-${PI/2}" upper="${PI/2}" effort="10" velocity="3"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <transmission name="ackermann_steering_joint_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="steer_contol_joint">
+        <hardwareInterface>PositionJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="ackermann_steering_motor">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+    <!-- Traction Wheels -->
+    <gazebo reference="traction_wheel_link">
+        <material>Gazebo/${wheel_color}</material>
+    </gazebo>
+    <link name="traction_wheel_link">
+        <visual>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <material name="Blue" />
+        </visual>
+        <collision>
+            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_length}"/>
+            </geometry>
+            <surface>
+                <friction>
+                <ode>
+                    <mu>0.998000</mu>
+                    <mu2>0.998000</mu2>
+                    <fdir1>0.000000 0.000000 0.000000</fdir1>
+                    <slip1>0.000000</slip1>
+                    <slip2>0.000000</slip2>
+                </ode>
+                </friction>
+            </surface>
+        </collision>
+        <xacro:cylinder_inertial radius="${wheel_radius}" length="${wheel_length}" mass="5">
+            <origin xyz="0 0 0" />
+        </xacro:cylinder_inertial>
+    </link>
+
+    <joint name="traction_wheel_joint" type="continuous">
+        <origin xyz="0 0 -${steer_link_length/2}" rpy="-${PI/2} 0 0" />
+        <parent link="steer_control_link"/>
+        <child link="traction_wheel_link" />
+        <axis xyz="0 0 1" />
+        <limit effort="100" velocity="100"/>
+        <safety_controller k_velocity="10" />
+    </joint>
+
+    <transmission name="ackermann_traction_joint_transmission">
+      <type>transmission_interface/SimpleTransmission</type>
+      <joint name="traction_wheel_joint">
+        <hardwareInterface>VelocityJointInterface</hardwareInterface>
+      </joint>
+      <actuator name="ackermann_traction_motor">
+        <mechanicalReduction>1</mechanicalReduction>
+      </actuator>
+    </transmission>
+
+</robot>

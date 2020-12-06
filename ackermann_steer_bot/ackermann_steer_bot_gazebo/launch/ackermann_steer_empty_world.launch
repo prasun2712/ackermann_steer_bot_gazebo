@@ -1,0 +1,36 @@
+<launch>
+
+    <arg name="world_name" default="worlds/empty.world"/>
+    <arg name="robot_namespace" default="ackermann_steer_bot"/>
+    <arg name="x" default="0"/>
+    <arg name="y" default="0"/>
+    <arg name="z" default="0"/>
+    <arg name="yaw" default="0.0"/>
+    <!-- <arg name="world_name" value="$(find ackermann_steer_bot_gazebo)/worlds/gas_station.world"/> -->
+
+    <!-- <include file="$(find ackermann_steer_bot_gazebo)/launch/diff_bot_base_only.launch"/> -->
+    <include file="$(find ackermann_steer_bot_description)/launch/ackermann_steer_bot_base_only.launch"/>
+
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <node name="spawn_ackermann_steer_bot_model" pkg="gazebo_ros" type="spawn_model" args="-x $(arg x)
+    -y $(arg y)
+    -z $(arg z)
+    -Y $(arg yaw)
+    -unpause
+    -urdf
+    -param robot_description
+    -model $(arg robot_namespace)" />
+
+    <rosparam file="$(find ackermann_steer_bot_description)/config/controller.yaml" command="load" />
+    
+    <node name="controller_spawner" pkg="controller_manager" type="spawner" respawn="false" output="screen" args="mobile_base_controller joint_state_controller" />
+
+</launch>
