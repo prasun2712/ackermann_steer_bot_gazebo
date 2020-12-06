@@ -17,8 +17,7 @@ roslaunch ackermann_steer_bot_gazebo ackermann_steer_empty_world.launch
 ```
 rosrun rqt_gui rqt_gui
 ```
-Go to **Plugins->Robot Tools->Robot Steering**
-In topic put : ***/mobile_base_controller/cmd_vel***
+Go to **Plugins->Robot Tools->Robot Steering**. In topic put : ***/mobile_base_controller/cmd_vel***
 
 ## Video
 **Click the image below to see the demo video for basic movement of robot using ROS command velocity.**
